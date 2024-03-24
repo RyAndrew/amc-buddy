@@ -87,7 +87,11 @@ app.get('/fetch_all_emails', async (req, res) => {
     console.log('fetching events')
 
     const db = await openDb()
-    await imapAttachmentFetcher.saveEventsToDbDownloadAttachments({db, photoDir})
+    try{
+        await imapAttachmentFetcher.saveAllEventsToDbDownloadAttachments({db, photoDir})
+    }catch(err){
+        console.log('error!', err)
+    }
     db.close()
 
     res.send(`Done!`)
