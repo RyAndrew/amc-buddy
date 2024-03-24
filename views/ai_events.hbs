@@ -16,6 +16,7 @@
 {{#each events}}
 <li>
     {{niceDate}}<BR>{{type}} - {{camera}}<BR>
+    <PRE>{{text}}</PRE>
     <ul class="flex-row">
     {{#each attachments}}
         <li><a href="/photo/{{filename}}" target="_blank"><img src="/photo_thumb/{{filename}}" loading="lazy" class="photo-thumb"></a></li>

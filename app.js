@@ -107,6 +107,7 @@ app.get('/ai_events', async (req, res) => {
     event.datetime,
     event.type,
     event.camera,
+    event.text,
     eventattachment.filename 
     FROM 
     event 
@@ -128,7 +129,8 @@ app.get('/ai_events', async (req, res) => {
                 camera: Utils.formatCamera(event.camera),
                 datetime: event.datetime,
                 niceDate: Utils.formatDateYmdHms(event.datetime),
-                attachments: []
+                text: event.text,
+                attachments: [],
             }
             lastEvent = event.eventid
         }
