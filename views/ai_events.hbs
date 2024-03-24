@@ -1,0 +1,39 @@
+<h1>AI Events</h1>
+<div class="form-group row">
+    <div class="col-1">
+        <label for="ex1">Date Start</label>
+        <input type="text" class="form-control" id="ex1" name="datestart" placeholder="01/01/2001">
+    </div>
+    <div class="col-1">
+        <label for="ex2">Date End</label>
+        <input type="text" class="form-control" id="ex2" name="dateend" placeholder="01/31/2001">
+    </div>
+    <div class="col-1">
+        <button type="button" class="btn btn-primary" id="buttonFilter">Filter</button>
+    </div>
+</div>
+<ul>
+{{#each events}}
+<li>
+    {{niceDate}}<BR>{{type}} - {{camera}}<BR>
+    <ul class="flex-row">
+    {{#each attachments}}
+        <li><a href="/photo/{{filename}}" target="_blank"><img src="/photo_thumb/{{filename}}" loading="lazy" class="photo-thumb"></a></li>
+    {{/each}}
+    </ul>
+</li>
+{{/each}}
+</ul>
+<script>
+const datestart = document.querySelector('input[name="datestart"]');
+const datestartdatepicker = new Datepicker(datestart, {
+  buttonClass: 'btn',
+  autohide:true,
+}); 
+const dateend = document.querySelector('input[name="dateend"]');
+const dateenddatepicker = new Datepicker(dateend, {
+  buttonClass: 'btn',
+  autohide:true,
+});
+
+</script>

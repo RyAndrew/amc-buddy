@@ -1,0 +1,23 @@
+html, body {
+    font-family: arial;
+    font-size:1em;
+}
+body {
+    margin: 10px;
+}
+.photo-thumb {
+    width: 450px;
+    height: 253px;
+    display:block;
+}
+.flex-row {
+    display: flex;
+    justify-content: flex-start;
+}
+li {
+    list-style-type: none;
+}
+#buttonFilter {
+    margin-top: 1.5em;
+}
+

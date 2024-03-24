@@ -1,0 +1,23 @@
+{
+  "name": "amc-buddy",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.1",
+    "express-slow-down": "^2.0.1",
+    "hbs": "^4.2.0",
+    "imap": "github:mscdex/node-imap",
+    "mailparser": "^3.6.9",
+    "sharp": "^0.33.3",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7"
+  }
+}
