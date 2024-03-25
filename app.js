@@ -9,6 +9,7 @@ const sqlite3  = require( 'sqlite3')
 const { open }  = require( 'sqlite')
 
 const sharp = require('sharp')
+//sharp.simd(false) // make prevent sharp from cashing? nope, still crashes??
 
 const { slowDown } = require('express-slow-down')
 const express = require('express')
@@ -46,7 +47,8 @@ const limiter = slowDown({
 	delayAfter: 10, // Allow 10 requests per second
 	delayMs: (hits) => hits * 75, // Add 50 ms of delay to every request after the 10th one.
 })
-app.use('/'+photoDirName+thumbDir+'/:thumbname', limiter, async (req, res, next) => {
+//limiter, 
+app.use('/'+photoDirName+thumbDir+'/:thumbname', async (req, res, next) => {
     //console.log('Requested thumbname:', req.params.thumbname)
     let thumbFile = path.join(photoDir+thumbDir,req.params.thumbname)
     await fs.access(thumbFile)
@@ -70,21 +72,41 @@ app.use('/'+photoDirName+thumbDir,express.static(photoDir+thumbDir))
 app.use('/'+photoDirName,express.static(photoDir))
 
 app.get('/', async (req, res) => {
-    res.render('index')
+    
+    //get latest event from db
+    const db = await openDb()
+    let lastEvent = await db.get(`SELECT max(datetime) maxDate FROM event `)
+    db.close()
+    console.log(lastEvent)
+    if(lastEvent.maxDate === null){
+        lastEvent = 'Never'
+    }else{
+        const lastEventDate = new Date(lastEvent.maxDate)
+        lastEvent = lastEventDate.toLocaleString('en-US')
+    }
+
+    res.render('index', {lastEvent:lastEvent})
 })
 
+app.get('/emails_mark_all_unseen', async (req, res) => {
+    console.log('mark all unseen')
+
+    await imapAttachmentFetcher.markAllMessagesUnseen()
+
+    res.send(`Done!`)
+})
 app.get('/fetch_new_emails', async (req, res) => {
-    console.log('fetching events')
+    console.log('fetching new email')
 
     const db = await openDb()
-    await imapAttachmentFetcher.saveNewEventsToDbDownloadAttachments({db, photoDir})
+    await imapAttachmentFetcher.saveUnseenEventsToDbDownloadAttachments({db, photoDir})
     db.close()
 
     res.send(`Done!`)
 })
 
 app.get('/fetch_all_emails', async (req, res) => {
-    console.log('fetching events')
+    console.log('fetching all emails')
 
     const db = await openDb()
     try{
