@@ -9,7 +9,6 @@ const sqlite3  = require( 'sqlite3')
 const { open }  = require( 'sqlite')
 
 const sharp = require('sharp')
-//sharp.simd(false) // make prevent sharp from cashing? nope, still crashes??
 
 const { slowDown } = require('express-slow-down')
 const express = require('express')
@@ -20,13 +19,6 @@ const Utils = require("./lib/Utils.js")
 
 const photoDirName = 'photo'
 const photoDir = path.join(__dirname,photoDirName)
-
-async function openDb(){
-    return await open({
-        filename: process.env.SQLLITEDATA,
-        driver: sqlite3.Database
-    })
-}
 
 const app = express()
 const port = process.env.PORT || 8080
@@ -70,6 +62,13 @@ app.use('/'+photoDirName+thumbDir+'/:thumbname', async (req, res, next) => {
 app.use('/static',express.static(path.join(__dirname,'static')))
 app.use('/'+photoDirName+thumbDir,express.static(photoDir+thumbDir))
 app.use('/'+photoDirName,express.static(photoDir))
+
+async function openDb(){
+    return await open({
+        filename: process.env.SQLLITEDATA,
+        driver: sqlite3.Database
+    })
+}
 
 app.get('/', async (req, res) => {
     
@@ -130,18 +129,18 @@ app.get('/ai_events', async (req, res) => {
     const db = await openDb()
 
     const allEventsAttachments = await db.all(
-        `SELECT 
-    event.eventid,
-    event.datetime,
-    event.type,
-    event.camera,
-    event.text,
-    eventattachment.filename 
+    `SELECT 
+        event.eventid,
+        event.datetime,
+        event.type,
+        event.camera,
+        event.text,
+        eventattachment.filename 
     FROM 
-    event 
-    join eventattachment on eventattachment.eventid=event.eventid 
+        event 
+        join eventattachment on eventattachment.eventid=event.eventid 
     ORDER BY
-    event.eventid DESC, eventattachment.filename ASC`
+        event.eventid DESC, eventattachment.filename ASC`
     )
 
     db.close()
@@ -178,19 +177,13 @@ app.get('/ai_events', async (req, res) => {
 })
 
 process.on('unhandledRejection', (reason) => {
-    // I just caught an unhandled promise rejection,
-    // since we already have fallback handler for unhandled errors (see below),
-    // let throw and let him handle that
     console.log('unhandledRejection')
     console.log(reason)
     throw reason
 })
 
 process.on('uncaughtException', (error) => {
-    // I just received an error that was never handled, time to handle it and then decide whether a restart is needed
-
     console.log('uncaughtException')
     console.log(error)
-
     process.exit(1)
 })
