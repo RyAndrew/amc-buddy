@@ -91,6 +91,9 @@ app.get('/', async (req, res) => {
 app.get('/emails_mark_all_unseen', async (req, res) => {
     console.log('mark all unseen')
 
+    res.send(`function disabled`)
+    return;
+    
     await imapAttachmentFetcher.markAllMessagesUnseen()
 
     res.send(`Done!`)
@@ -107,6 +110,9 @@ app.get('/fetch_new_emails', async (req, res) => {
 
 app.get('/fetch_all_emails', async (req, res) => {
     console.log('fetching all emails')
+
+    res.send(`function disabled`)
+    return;
 
     const db = await openDb()
     try{
@@ -135,7 +141,7 @@ app.get('/ai_events', async (req, res) => {
     event 
     join eventattachment on eventattachment.eventid=event.eventid 
     ORDER BY
-    event.eventid ASC`
+    event.eventid DESC, eventattachment.filename ASC`
     )
 
     db.close()
@@ -150,7 +156,8 @@ app.get('/ai_events', async (req, res) => {
                 type: Utils.formatEventType(event.type),
                 camera: Utils.formatCamera(event.camera),
                 datetime: event.datetime,
-                niceDate: Utils.formatDateYmdHms(event.datetime),
+                niceDate: Utils.formatDateYmd(event.datetime),
+                niceTime: Utils.formatDateHms(event.datetime),
                 text: event.text,
                 attachments: [],
             }
