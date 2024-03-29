@@ -5,8 +5,8 @@ require('dotenv').config()
 const path = require('path')
 const fs = require('node:fs/promises')
 
-const sqlite3  = require( 'sqlite3')
-const { open }  = require( 'sqlite')
+const dataModel  = require( './lib/dataModel.js')
+const db = new dataModel()
 
 const sharp = require('sharp')
 
@@ -63,19 +63,12 @@ app.use('/static',express.static(path.join(__dirname,'static')))
 app.use('/'+photoDirName+thumbDir,express.static(photoDir+thumbDir))
 app.use('/'+photoDirName,express.static(photoDir))
 
-async function openDb(){
-    return await open({
-        filename: process.env.SQLLITEDATA,
-        driver: sqlite3.Database
-    })
-}
 
 app.get('/', async (req, res) => {
     
     //get latest event from db
-    const db = await openDb()
-    let lastEvent = await db.get(`SELECT max(datetime) maxDate FROM event `)
-    db.close()
+    let lastEvent = await db.getMaxEventDate()
+    
     console.log(lastEvent)
     if(lastEvent.maxDate === null){
         lastEvent = 'Never'
@@ -100,9 +93,7 @@ app.get('/emails_mark_all_unseen', async (req, res) => {
 app.get('/fetch_new_emails', async (req, res) => {
     console.log('fetching new email')
 
-    const db = await openDb()
     await imapAttachmentFetcher.saveUnseenEventsToDbDownloadAttachments({db, photoDir})
-    db.close()
 
     res.send(`Done!`)
 })
@@ -113,37 +104,18 @@ app.get('/fetch_all_emails', async (req, res) => {
     res.send(`function disabled`)
     return;
 
-    const db = await openDb()
     try{
         await imapAttachmentFetcher.saveAllEventsToDbDownloadAttachments({db, photoDir})
     }catch(err){
         console.log('error!', err)
     }
-    db.close()
 
     res.send(`Done!`)
 })
 
 app.get('/ai_events', async (req, res) => {
 
-    const db = await openDb()
-
-    const allEventsAttachments = await db.all(
-    `SELECT 
-        event.eventid,
-        event.datetime,
-        event.type,
-        event.camera,
-        event.text,
-        eventattachment.filename 
-    FROM 
-        event 
-        join eventattachment on eventattachment.eventid=event.eventid 
-    ORDER BY
-        event.eventid DESC, eventattachment.filename ASC`
-    )
-
-    db.close()
+    const allEventsAttachments = await db.getAllEventsAndAttachments()
     
     let eventsById = {}
     let lastEvent
