@@ -84,17 +84,30 @@ app.get('/emails_mark_all_unseen', async (req, res) => {
     console.log('mark all unseen')
 
     res.send(`function disabled`)
-    return;
+    return
     
     await imapAttachmentFetcher.markAllMessagesUnseen()
 
     res.send(`Done!`)
 })
+
+let singleRunActive_FetchImap = false
+
 app.get('/fetch_new_emails', async (req, res) => {
-    console.log('fetching new email')
-
-    await imapAttachmentFetcher.saveUnseenEventsToDbDownloadAttachments({db, photoDir})
-
+    if(singleRunActive_FetchImap===true ){
+        res.send(`No Simultaenous Requests!`)
+        return
+    }
+    singleRunActive_FetchImap = true
+    try{
+        await imapAttachmentFetcher.saveUnseenEventsToDbDownloadAttachments({db, photoDir})
+    }catch(err){
+        res.send(`Error! ${err}`)
+        console.log(err)
+        return
+    }finally{
+        singleRunActive_FetchImap = false
+    }
     res.send(`Done!`)
 })
 
@@ -102,7 +115,7 @@ app.get('/fetch_all_emails', async (req, res) => {
     console.log('fetching all emails')
 
     res.send(`function disabled`)
-    return;
+    return
 
     try{
         await imapAttachmentFetcher.saveAllEventsToDbDownloadAttachments({db, photoDir})
