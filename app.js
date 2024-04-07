@@ -99,8 +99,9 @@ app.get('/fetch_new_emails', async (req, res) => {
         return
     }
     singleRunActive_FetchImap = true
+    let messagesDownloaded = 0;
     try{
-        await imapAttachmentFetcher.saveUnseenEventsToDbDownloadAttachments({db, photoDir})
+        messagesDownloaded = await imapAttachmentFetcher.saveUnseenEventsToDbDownloadAttachments({db, photoDir})
     }catch(err){
         res.send(`Error! ${err}`)
         console.log(err)
@@ -108,7 +109,7 @@ app.get('/fetch_new_emails', async (req, res) => {
     }finally{
         singleRunActive_FetchImap = false
     }
-    res.send(`Done!`)
+    res.send(`Done! ${messagesDownloaded} new messages`)
 })
 
 app.get('/fetch_all_emails', async (req, res) => {
