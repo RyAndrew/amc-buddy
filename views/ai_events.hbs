@@ -12,6 +12,13 @@
         <button type="button" class="btn btn-primary" id="buttonFilter">Filter</button>
     </div>
 </div>
+<div>
+    {{#if highQuality}}
+        <a class="btn btn-primary"href="/ai_events">Low Quality</a>
+    {{else}}
+        <a class="btn btn-primary"href="/ai_events?quality=high">High Quality</a>
+    {{/if}}
+</div>
 {{#each events}}
     {{niceTime}} {{niceDate}} - {{camera}} - {{type}}<BR>
     <!--<PRE>{{text}}</PRE>-->
@@ -24,7 +31,7 @@
         <div class="carousel-inner">
             {{#each attachments}}
                 <div class="carousel-item {{#if @index}}{{else}}active{{/if}}">
-                <a href="/photo/{{filename}}" target="_blank"><img class="d-block w-100" src="/photo_thumb/{{filename}}" loading="lazy" class="photo-thumb"></a>
+                <a href="/photo/{{filename}}" target="_blank"><img class="d-block w-100" src="{{#if ../../highQuality}}/photo/{{else}}/photo_thumb/{{/if}}{{filename}}" loading="lazy" class="photo-thumb"></a>
                 </div>
             {{/each}}
         </div>

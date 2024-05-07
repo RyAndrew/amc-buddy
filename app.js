@@ -159,7 +159,9 @@ app.get('/ai_events', async (req, res) => {
         direction:'desc'
     })
 
-    res.render('ai_events',{events:events})
+    let highQuality = req.query?.quality === 'high' ? true : false;
+    
+    res.render('ai_events',{highQuality:highQuality, events:events})
 })
 
 process.on('unhandledRejection', (reason) => {
