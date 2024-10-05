@@ -3,9 +3,9 @@ html, body {
     font-size:1em;
 }
 .photo-thumb {
-    width: 450px;
-    height: 253px;
-    display:block;
+    /*width: 450px;*/
+    min-height: 400px !important;
+    /*display:block;*/
 }
 .flex-row {
     display: flex;
@@ -22,4 +22,54 @@ li {
 }
 .ai-events-wrapper {
     margin:10px;
+}
+
+.carousel-inner img {
+    min-height:500px;
+}
+
+.expand-photo {
+    color: #000;
+    text-shadow: 0 0 10px #fff;
+    font-size: 4rem;
+    line-height: 20px;
+    text-decoration: none;
+    margin: 20px;
+    display: block;
+    position: absolute;
+    top: 15px;
+    z-index: 2;
+}
+.expand-photo, .favorite-photo {
+    user-select: none;
+}
+
+/*
+.favorite-photo::after {
+*/
+    /*color:transparent;*/
+    /*
+    content: "⭐";
+    text-shadow: 1px 1px 10px #ff0000;
+}
+*/
+.favorite-photo {
+}
+.favorite-photo {
+    filter:drop-shadow(0px 0px 3px #fff);
+    color:transparent;
+    text-shadow: 0px 0px 0px #000000;
+    font-size: 2.5rem;
+    text-decoration: none;
+    display: block;
+    position: absolute;
+    top: 80px;
+    left: 20px;
+    z-index: 2;
+}
+
+.star-yellow {
+    filter: drop-shadow(0px 0px 3px #000);
+    color:transparent;
+    text-shadow: 0px 0px 0px #eeff00;
 }

@@ -1,0 +1,27 @@
+{{#each events}}
+    {{niceTime}} {{niceDate}} - {{camera}} - {{type}}<BR>
+    <!--&#9734; &#9733;<PRE>{{text}}</PRE>-->
+    <div id="carouselIndicators{{eventid}}" class="carousel slide" data-bs-interval="0">
+        <div class="carousel-indicators">
+            {{#each attachments}}
+                <button type="button" data-bs-target="#carouselIndicators{{../eventid}}" data-bs-slide-to="{{@index}}" {{#if @index}}{{else}}class="active" aria-current="true"{{/if}} aria-label="Slide {{@index}}"></button>
+            {{/each}}
+        </div>
+        <div class="carousel-inner">
+            {{#each attachments}}
+                <div class="carousel-item {{#if @index}}{{else}}active{{/if}}"><a class="expand-photo" href="/photo/{{filename}}" target="_blank">&#x26F6;</a><a class="favorite-photo {{#if ../favorite}}star-yellow{{/if}}" favorite="{{../favorite}}" id="favorite-{{../eventid}}" onclick="favoritePhoto(event,{{../eventid}})" href="#">&#x2B50;</a>
+
+                <img class="d-block w-100" id="{{filename}}" src="{{#if ../../highQuality}}/photo/{{else}}/photo_thumb/{{/if}}{{filename}}" loading="lazy" class="photo-thumb" onclick="photoClicked(event)">
+                </div>
+            {{/each}}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselIndicators{{eventid}}" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselIndicators{{eventid}}" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+{{/each}}

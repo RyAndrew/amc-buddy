@@ -15,6 +15,7 @@
     "express-slow-down": "^2.0.1",
     "hbs": "^4.2.0",
     "imap": "github:mscdex/node-imap",
+    "joi": "^17.13.3",
     "mailparser": "^3.6.9",
     "sharp": "^0.33.3",
     "sqlite": "^5.1.1",

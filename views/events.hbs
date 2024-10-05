@@ -1,0 +1,242 @@
+<div class="ai-events-wrapper">
+<!--
+<div class="d-flex flex-row">
+    <div class="p-2">
+        <label for="datestart">Date Start</label>
+        <input type="text" class="form-control" name="datestart" id="datestart">
+    </div>
+    <div class="p-2">
+        <label for="dateend">Date End</label>
+        <input type="text" class="form-control" name="dateend" id="dateend">
+    </div>
+    <div class="p-2">
+        <button type="button" class="btn btn-primary" id="buttonFilter" onclick="filter()">Filter</button>
+    </div>
+</div>
+-->
+<div class="d-flex flex-row">
+    <div class="p-2">
+        <label for="ex1">Date Start</label>
+        <input type="text" class="form-control" id="datestart" name="datestart">
+    </div>
+    <div class="p-2">
+        <label for="ex2">Date End</label>
+        <input type="text" class="form-control" id="dateend" name="dateend">
+    </div>
+    <div class="p-2">
+        <button type="button" class="btn btn-primary" id="buttonFilter" onclick="filter()">Filter</button>
+    </div>
+</div>
+<div>
+    {{#if highQuality}}
+        <a class="btn btn-primary"href="/events?quality=low">Low Quality</a>
+    {{else}}
+        <a class="btn btn-primary"href="/events?quality=high">High Quality</a>
+    {{/if}}
+</div>
+<script>
+    //value="{//{@root.dateStart}}"
+    //value="{{@root.dateEnd}}"
+
+    let noMoreResults = false
+    function filter(){
+        let start = document.querySelector('input[name="datestart"]').value
+        let end = document.querySelector('input[name="dateend"]').value
+        console.log(start,end)
+        //currentStartDate = start
+        currentOffset = 0
+        noMoreResults = false
+        document.querySelector('#events-display').innerHTML = ''
+        fetchNextPagePreventMultiRequest(start, end, currentOffset)
+        
+    }
+    let search = new URL(window.location).searchParams
+    let currentOffset = 0
+    let pageSize = 50
+    //let currentOffset = parseInt(search.get("after") || 0)
+
+    let pageFetchActive = false
+    async function fetchNextPage(dateStart, dateEnd, offset){
+        console.log('fetchNextPage')
+        console.log('dateStart',dateStart)
+        console.log('dateEnd',dateEnd)
+        console.log('offset',offset)
+        console.log('noMoreResults',noMoreResults)
+        if(noMoreResults){
+            console.log('no more results, will not fetch')
+            return
+        }
+        
+        let replyJson
+        try{
+            const response = await fetch(`/api/events?after=${offset}&dateStart=${dateStart}&dateEnd=${dateEnd}`)
+            if(!response.ok){
+                console.error('error fetching data',response)
+                return
+            }
+            replyJson = await response.json()
+        }catch(err){
+            return
+        }
+
+        console.log(replyJson)
+        if(replyJson.count < pageSize){
+            console.log('no more results!')
+            noMoreResults=true
+        }
+        currentOffset+=pageSize
+
+        lastDateStart = dateStart
+        lastDateEnd = dateEnd
+        document.querySelector('#events-display').append(document.createRange().createContextualFragment(replyJson.html))
+
+        //let url = new URL(window.location)
+        //history.pushState({},"",url.pathname +'?after='+offset)
+    }
+    let lastClickedPhoto = null
+    function photoClicked(event){
+        return 
+
+        lastClickedPhoto=event.target.id
+        console.log('lastClickedPhoto',lastClickedPhoto)
+        //history.pushState({},"",window.location + '#' +lastClickedPhoto)
+
+        const photoUrl = new URL(event.target.src);
+        
+        console.log('event.target.id',event.target.id)
+
+        getTimeStampFromFile(photoUrl.pathname)
+
+        let windowUrl = window.location+''
+        let hashLoc = windowUrl.indexOf('#')
+        if(hashLoc){
+            windowUrl = windowUrl.substring(0,hashLoc)
+            console.log('windowUrl',windowUrl)
+            //windowUrl.indexOf('#')
+            history.pushState({},"",windowUrl + '#' + event.target.id)
+        }else{
+            history.pushState({},"",window.location + '#' + event.target.id)
+        }
+    }
+    function getTimeStampFromFile(file){
+        
+        let n = file.lastIndexOf('/');
+        let photoUrlFile = file.substring(n + 1);
+        console.log('photoUrlFile',photoUrlFile.substring(0,17))
+        return photoUrlFile.substring(0,17)
+    }
+
+    async function onScroll() {
+        if (window.pageYOffset + window.innerHeight >= document.documentElement.scrollHeight - 50) {
+            console.log('Reached bottom')
+            fetchNextPagePreventMultiRequest(lastDateStart, lastDateEnd, currentOffset)
+        }
+    }
+
+    async function fetchNextPagePreventMultiRequest(dateStart, dateEnd, offset) {
+        if(pageFetchActive){
+            return
+        }else{
+            pageFetchActive = true
+            await fetchNextPage(dateStart, dateEnd, offset)
+            pageFetchActive = false
+        }
+    }
+    window.addEventListener("scroll", onScroll)
+
+    function loadFirstPage(){
+        let dateStart = new Date()
+        dateStart = dateStart.toLocaleDateString('en-CA') + ' 00:00:00'
+
+        let dateEnd = new Date()
+        dateEnd = dateEnd.toLocaleDateString('en-CA') + ' 23:59:59'
+        fetchNextPagePreventMultiRequest(dateStart, dateEnd, currentOffset)
+    }
+
+    async function favoritePhoto(event, eventId){
+        event.preventDefault();
+        console.log('favoritePhoto',eventId)
+        console.log('event.target',event.target)
+        let star = document.getElementById("favorite-"+eventId)
+        
+        
+        const newValue = event.target.getAttribute('favorite')==1 ? 0 : 1
+        //'{{filename}}'
+        try{
+            const response = await fetch('/favorite',{
+                method:"PUT",
+                body: JSON.stringify({ eventId: eventId, favorite: newValue }),
+                headers: {
+                //    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+            })
+            if(!response.ok){
+                console.error('error fetching data',response)
+                return
+            }
+            star.classList.toggle("star-yellow")
+            event.target.setAttribute('favorite', newValue)
+        }catch(err){
+            return
+        }
+    }
+    //load first page
+    loadFirstPage()
+
+    //{//{ > event_carousel events=events highQuality=highQuality //}//}
+</script>
+</div>
+<script>
+    
+    console.log('make dates!')
+
+    const nowDate = new Date()
+    let dateStart = nowDate.toLocaleDateString('en-CA') + ' 00:00:00'
+        dateStart = new Date(dateStart)
+        dateStart = dateStart.getTime()
+    let dateEnd = nowDate.toLocaleDateString('en-CA') + ' 23:59:59'
+        dateEnd = new Date(dateEnd)
+        dateEnd = dateEnd.getTime()
+
+    new AirDatepicker('#datestart', {
+        locale: airdatepickeren,
+        timepicker: true,
+        timeFormat: 'h:mm AA',
+        selectedDates:[dateStart],
+    });
+    new AirDatepicker('#dateend', {
+        locale: airdatepickeren,
+        timepicker: true,
+        timeFormat: 'h:mm AA',
+        selectedDates:[dateEnd],
+    });
+
+
+    //const dateStartField = document.querySelector('input[name="datestart"]');
+    //dateStartField.value = dateStart
+    //const datestartdatepicker = new Datepicker(dateStartField, {
+        //buttonClass: 'btn',
+        //autohide:true,
+    //}); 
+
+    //const dateEndField = document.querySelector('input[name="dateend"]');
+    //dateEndField.value = dateEnd
+    //const dateenddatepicker = new Datepicker(dateEndField, {
+        //buttonClass: 'btn',
+        //autohide:true,
+    //});
+//        console.log(document.querySelector("div.ai-events-wrapper"))
+//    document.querySelector("div.ai-events-wrapper").addEventListener("scroll", (event) => {
+//        
+//        history.pushState(null, "", window.location + '#' + lastLoadedPhoto)
+//
+//        console.log('scroll')
+//        history.pushState()
+//    })
+//    document.addEventListener("scroll", (event) => {
+//        console.log("document scroll")
+//        //history.pushState(null, "", window.location + '#' + lastLoadedPhoto)
+//    })
+</script>
+<div id="events-display"></div>
