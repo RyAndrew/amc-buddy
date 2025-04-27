@@ -24,6 +24,9 @@
         <input type="text" class="form-control" id="dateend" name="dateend">
     </div>
     <div class="p-2">
+        <input type="checkbox" id="favoriteonly" name="favoriteonly"><label for="favoriteonly">&nbsp;&nbsp;Favorites Only</label>
+    </div>
+    <div class="p-2">
         <button type="button" class="btn btn-primary" id="buttonFilter" onclick="filter()">Filter</button>
     </div>
 </div>
@@ -39,15 +42,18 @@
     //value="{{@root.dateEnd}}"
 
     let noMoreResults = false
+    let favoriteOnly = 0;
     function filter(){
         let start = document.querySelector('input[name="datestart"]').value
         let end = document.querySelector('input[name="dateend"]').value
+        console.log(document.querySelector('input[name="favoriteonly"]'))
+        favoriteOnly = document.querySelector('input[name="favoriteonly"]').checked ? 1 : 0;
         console.log(start,end)
         //currentStartDate = start
         currentOffset = 0
         noMoreResults = false
         document.querySelector('#events-display').innerHTML = ''
-        fetchNextPagePreventMultiRequest(start, end, currentOffset)
+        fetchNextPagePreventMultiRequest(start, end, currentOffset, favoriteOnly)
         
     }
     let search = new URL(window.location).searchParams
@@ -56,7 +62,7 @@
     //let currentOffset = parseInt(search.get("after") || 0)
 
     let pageFetchActive = false
-    async function fetchNextPage(dateStart, dateEnd, offset){
+    async function fetchNextPage(dateStart, dateEnd, offset, favoriteOnly){
         console.log('fetchNextPage')
         console.log('dateStart',dateStart)
         console.log('dateEnd',dateEnd)
@@ -69,7 +75,7 @@
         
         let replyJson
         try{
-            const response = await fetch(`/api/events?after=${offset}&dateStart=${dateStart}&dateEnd=${dateEnd}`)
+            const response = await fetch(`/api/events?after=${offset}&dateStart=${dateStart}&dateEnd=${dateEnd}&favoriteOnly=${favoriteOnly}`)
             if(!response.ok){
                 console.error('error fetching data',response)
                 return
@@ -129,16 +135,16 @@
     async function onScroll() {
         if (window.pageYOffset + window.innerHeight >= document.documentElement.scrollHeight - 50) {
             console.log('Reached bottom')
-            fetchNextPagePreventMultiRequest(lastDateStart, lastDateEnd, currentOffset)
+            fetchNextPagePreventMultiRequest(lastDateStart, lastDateEnd, currentOffset, favoriteOnly)
         }
     }
 
-    async function fetchNextPagePreventMultiRequest(dateStart, dateEnd, offset) {
+    async function fetchNextPagePreventMultiRequest(dateStart, dateEnd, offset, favoriteOnly) {
         if(pageFetchActive){
             return
         }else{
             pageFetchActive = true
-            await fetchNextPage(dateStart, dateEnd, offset)
+            await fetchNextPage(dateStart, dateEnd, offset, favoriteOnly)
             pageFetchActive = false
         }
     }
@@ -150,7 +156,7 @@
 
         let dateEnd = new Date()
         dateEnd = dateEnd.toLocaleDateString('en-CA') + ' 23:59:59'
-        fetchNextPagePreventMultiRequest(dateStart, dateEnd, currentOffset)
+        fetchNextPagePreventMultiRequest(dateStart, dateEnd, currentOffset, favoriteOnly)
     }
 
     async function favoritePhoto(event, eventId){

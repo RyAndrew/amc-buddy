@@ -152,13 +152,19 @@ app.get('/api/events', async (req, res) => {
         res.send( 'missing after parameter' )
         return
     }
+
+    const favoriteOnly = req.query?.favoriteOnly
+    if(!favoriteOnly){
+        res.send( 'missing favoriteOnly parameter' )
+        return
+    }
     
     // const dateStart = req.query?.dateStart
     // if(!dateStart){
     //     res.send( 'missing dateStart parameter' )
     //     return
     // }
-    const allEventsAttachments = await db.queryEventsAndAttachmentsOffset(after, dateStart, dateEnd)
+    const allEventsAttachments = await db.queryEventsAndAttachmentsOffset(favoriteOnly, after, dateStart, dateEnd)
     console.log('allEventsAttachments.length',allEventsAttachments.length)
     
     let eventsById = {}
@@ -240,53 +246,56 @@ app.put('/favorite', jsonBodyPayload, Utils.joiValidatorMiddleware(putFavoriteSc
 })
 app.get('/events', async (req, res) => {
 
-    const after = req.query?.after || null
+    // const after = req.query?.after || null
 
-    const allEventsAttachments = await db.queryEventsAndAttachmentsOffset(after)
+    // const allEventsAttachments = await db.queryEventsAndAttachmentsOffset(0, after)
     
-    let eventsById = {}
-    let lastEvent
+    // let eventsById = {}
+    // let lastEvent
 
-    allEventsAttachments.forEach(event => {
-        //console.log(event)
-        if(event.eventid !== lastEvent){
-            eventsById[event.eventid]={
-                type: Utils.formatEventType(event.type),
-                camera: Utils.formatCamera(event.camera),
-                datetime: event.datetime,
-                niceDate: Utils.formatDateYmd(event.datetime),
-                niceTime: Utils.formatDateHms(event.datetime),
-                text: event.text,
-                attachments: [],
-            }
-            lastEvent = event.eventid
-        }
-        eventsById[event.eventid].attachments.push({
-            filename: event.filename,
-        })
-    })
-    let events = Object.values(eventsById)
+    // allEventsAttachments.forEach(event => {
+    //     console.log(event)
+    //     if(event.eventid !== lastEvent){
+    //         eventsById[event.eventid]={
+    //             type: Utils.formatEventType(event.type),
+    //             camera: Utils.formatCamera(event.camera),
+    //             datetime: event.datetime,
+    //             niceDate: Utils.formatDateYmd(event.datetime),
+    //             niceTime: Utils.formatDateHms(event.datetime),
+    //             text: event.text,
+    //             attachments: [],
+    //         }
+    //         lastEvent = event.eventid
+    //     }
+    //     eventsById[event.eventid].attachments.push({
+    //         filename: event.filename,
+    //     })
+    // })
+    // let events = Object.values(eventsById)
 
-    events = Utils.sortObjectArray(events, {
-        key:'datetime',
-        direction:'desc'
-    })
+    // events = Utils.sortObjectArray(events, {
+    //     key:'datetime',
+    //     direction:'desc'
+    // })
 
-    let highQuality = (req.query?.quality === 'low' ? false : true)
 
-    //console.log(req.query)
-    //console.log('highQuality',highQuality)
+    // //console.log(req.query)
+    // //console.log('highQuality',highQuality)
 
-    let dateStart = req.query?.dateStart
-    if(!dateStart){
-        dateStart = new Date(Date.now() - 86400000)
-    }
-    let dateEnd = req.query?.dateEnd
-    if(!dateEnd){
-        dateEnd = new Date()
-    }
+    // let dateStart = req.query?.dateStart
+    // if(!dateStart){
+    //     dateStart = new Date(Date.now() - 86400000)
+    // }
+    // let dateEnd = req.query?.dateEnd
+    // if(!dateEnd){
+    //     dateEnd = new Date()
+    // }
     //console.log('datestart',datestart,'dateend',dateend)
     
+    let highQuality = (req.query?.quality === 'low' ? false : true)
+    let dateStart = new Date(Date.now() - 86400000)
+    let dateEnd = new Date()
+    let events = [];
     res.render('events',{highQuality, events, dateStart, dateEnd})
 })
 
